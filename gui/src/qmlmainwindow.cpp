@@ -1,3 +1,4 @@
+#include "mousecapture.h"
 #include "qmlmainwindow.h"
 #include "qmlbackend.h"
 #include "qmlsvgprovider.h"
@@ -2555,6 +2556,8 @@ QmlMainWindow::QmlMainWindow(const StreamSessionConnectInfo &connect_info)
 
 QmlMainWindow::~QmlMainWindow()
 {
+    delete mouse_capture;
+    mouse_capture = nullptr;
     Q_ASSERT(!placebo_swapchain);
 
     // A normal exit isn't a crash, whether or not Vulkan showed a frame or the queued clear ran
@@ -2756,6 +2759,7 @@ void QmlMainWindow::setKeepVideo(bool keep)
 
 void QmlMainWindow::grabInput()
 {
+    stopMouseLook();
     setCursor(Qt::ArrowCursor);
     grab_input++;
     if (session)
@@ -5158,7 +5162,17 @@ renderer_backend_ready:
 
     backend = new QmlBackend(settings, this);
     stats_overlay_widget = new StatsOverlayWidget(this, backend);
+    // Mouse look: never keep the pointer captured while another app or window is in front.
+    connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, [this](Qt::ApplicationState state) {
+        if (state != Qt::ApplicationActive)
+            stopMouseLook();
+    });
+    connect(this, &QWindow::activeChanged, this, [this]() {
+        if (!isActive())
+            stopMouseLook();
+    });
     connect(backend, &QmlBackend::sessionChanged, this, [this, exit_app_on_stream_exit](StreamSession *s) {
+        stopMouseLook();
         const bool preserve_startup_warmup = s && startup_warmup_preserve_next_session_change;
         startup_warmup_preserve_next_session_change = false;
         session = s;
@@ -7647,6 +7661,58 @@ void QmlMainWindow::render()
 
 }
 
+bool QmlMainWindow::startMouseLook()
+{
+    if (mouse_look_captured)
+        return true;
+    if (!session || grab_input || !settings->GetMouseLookEnabled())
+        return false;
+    if (!mouse_capture)
+        mouse_capture = new MouseCapture(this);
+
+    MouseLookConfig config;
+    config.sensitivity = settings->GetMouseLookSensitivity();
+    config.deadzone = settings->GetMouseLookDeadzone() / 100.0;
+    config.invert_y = settings->GetMouseLookInvertY();
+    if (settings->GetMouseLookTrackpad()) {
+        config.gain = settings->GetMouseLookTrackpadBoost();
+        config.curve = 0.6;
+        config.momentum_ms = settings->GetMouseLookMomentum();
+    }
+    session->StartMouseLook(config);
+    if (!mouse_capture->Start([this](double dx, double dy) {
+            if (session)
+                session->HandleMouseLookDelta(dx, dy);
+        })) {
+        session->StopMouseLook();
+        qWarning() << "Mouse look: pointer capture is not supported on this platform";
+        return false;
+    }
+    mouse_look_captured = true;
+    setCursor(Qt::BlankCursor);
+    return true;
+}
+
+void QmlMainWindow::stopMouseLook()
+{
+    if (!mouse_look_captured)
+        return;
+    mouse_look_captured = false;
+    if (mouse_capture)
+        mouse_capture->Stop();
+    if (session)
+        session->StopMouseLook();
+    restoreStreamCursor();
+}
+
+void QmlMainWindow::restoreStreamCursor()
+{
+    if (has_video && !grab_input && settings->GetHideCursor())
+        setCursor(Qt::BlankCursor);
+    else
+        setCursor(Qt::ArrowCursor);
+}
+
 bool QmlMainWindow::handleShortcut(QKeyEvent *event)
 {
     if (event->modifiers() == Qt::NoModifier) {
@@ -7656,6 +7722,15 @@ bool QmlMainWindow::handleShortcut(QKeyEvent *event)
                 fullscreenTime();
             else
                 normalTime();
+            return true;
+        case Qt::Key_F8:
+            // Mouse look: capture or release the pointer
+            if (!session || grab_input || !settings->GetMouseLookEnabled())
+                return false;
+            if (mouse_look_captured)
+                stopMouseLook();
+            else
+                startMouseLook();
             return true;
         default:
             break;
@@ -7709,6 +7784,21 @@ bool QmlMainWindow::event(QEvent *event)
     case QEvent::MouseButtonRelease:
         if (static_cast<QMouseEvent*>(event)->source() != Qt::MouseEventNotSynthesized)
             return true;
+        if (session && !grab_input && mouse_look_captured) {
+            QMouseEvent *e = static_cast<QMouseEvent*>(event);
+            if (event->type() == QEvent::MouseMove)
+                mouse_capture->HandleMouseMove(e->position());
+            else
+                session->HandleMouseLookButton(e->button(), event->type() == QEvent::MouseButtonPress);
+            return true;
+        }
+        if (session && !grab_input && has_video && settings->GetMouseLookEnabled()
+                && event->type() == QEvent::MouseButtonPress
+                && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton) {
+            // Mouse look: a click on the stream captures the pointer (F8 releases it)
+            if (startMouseLook())
+                return true;
+        }
         if (session && !grab_input) {
             if (event->type() == QEvent::MouseMove)
                 session->HandleMouseMoveEvent(static_cast<QMouseEvent*>(event), width(), height());
@@ -7721,6 +7811,8 @@ bool QmlMainWindow::event(QEvent *event)
         QGuiApplication::sendEvent(quick_window, event);
         break;
     case QEvent::MouseButtonDblClick:
+        if (mouse_look_captured)
+            return true; // clicks are triggers while mouse look is active
         if(!settings->GetFullscreenDoubleClickEnabled())
             break;
         if (session && !grab_input) {
@@ -7754,6 +7846,9 @@ bool QmlMainWindow::event(QEvent *event)
             return true;
         }
         QGuiApplication::sendEvent(quick_window, event);
+        break;
+    case QEvent::FocusOut:
+        stopMouseLook();
         break;
     case QEvent::Close:
         if (!backend->closeRequested()) {
