@@ -31,6 +31,7 @@
 #include "sessionlog.h"
 #include "controllermanager.h"
 #include "settings.h"
+#include "mouselook.h"
 
 #include <QObject>
 #include <QImage>
@@ -221,6 +222,13 @@ class StreamSession : public QObject
 		float PS_TOUCHPAD_MAX_X, PS_TOUCHPAD_MAX_Y;
 		ChiakiControllerState keyboard_state;
 		ChiakiControllerState touch_state;
+		ChiakiControllerState mouse_look_state;
+		MouseLook mouse_look;
+		MouseLookConfig mouse_look_config;
+		QTimer *mouse_look_timer;
+		QElapsedTimer mouse_look_clock;
+		bool mouse_look_active = false;
+		void MouseLookTick();
 		QMap<int, uint8_t> touch_tracker;
 		int8_t mouse_touch_id;
 		ChiakiControllerState dpad_touch_state;
@@ -371,6 +379,12 @@ class StreamSession : public QObject
 		void HandleMouseReleaseEvent(QMouseEvent *event);
 		void HandleMousePressEvent(QMouseEvent *event);
 		void HandleMouseMoveEvent(QMouseEvent *event, qreal width, qreal height);
+		/// Mouse look: relative pointer motion drives the right stick while captured.
+		void StartMouseLook(const MouseLookConfig &config);
+		void StopMouseLook();
+		bool MouseLookActive() const { return mouse_look_active; }
+		void HandleMouseLookDelta(double dx, double dy);
+		void HandleMouseLookButton(Qt::MouseButton button, bool pressed);
 #if CHIAKI_GUI_ENABLE_SPEEX
 		bool ProcessMicFrame(int16_t *echo_buf);
 #endif
