@@ -809,6 +809,83 @@ void QmlSettings::setMouseTouchEnabled(bool enabled)
     emit mouseTouchEnabledChanged();
 }
 
+bool QmlSettings::mouseLookEnabled() const
+{
+    return settings->GetMouseLookEnabled();
+}
+
+void QmlSettings::setMouseLookEnabled(bool value)
+{
+    settings->SetMouseLookEnabled(value);
+    emit mouseLookEnabledChanged();
+}
+
+int QmlSettings::mouseLookSensitivity() const
+{
+    return settings->GetMouseLookSensitivity();
+}
+
+void QmlSettings::setMouseLookSensitivity(int value)
+{
+    settings->SetMouseLookSensitivity(value);
+    emit mouseLookSensitivityChanged();
+}
+
+int QmlSettings::mouseLookDeadzone() const
+{
+    return settings->GetMouseLookDeadzone();
+}
+
+void QmlSettings::setMouseLookDeadzone(int value)
+{
+    settings->SetMouseLookDeadzone(value);
+    emit mouseLookDeadzoneChanged();
+}
+
+bool QmlSettings::mouseLookInvertY() const
+{
+    return settings->GetMouseLookInvertY();
+}
+
+void QmlSettings::setMouseLookInvertY(bool value)
+{
+    settings->SetMouseLookInvertY(value);
+    emit mouseLookInvertYChanged();
+}
+
+bool QmlSettings::mouseLookTrackpad() const
+{
+    return settings->GetMouseLookTrackpad();
+}
+
+void QmlSettings::setMouseLookTrackpad(bool value)
+{
+    settings->SetMouseLookTrackpad(value);
+    emit mouseLookTrackpadChanged();
+}
+
+float QmlSettings::mouseLookTrackpadBoost() const
+{
+    return settings->GetMouseLookTrackpadBoost();
+}
+
+void QmlSettings::setMouseLookTrackpadBoost(float value)
+{
+    settings->SetMouseLookTrackpadBoost(value);
+    emit mouseLookTrackpadBoostChanged();
+}
+
+int QmlSettings::mouseLookMomentum() const
+{
+    return settings->GetMouseLookMomentum();
+}
+
+void QmlSettings::setMouseLookMomentum(int value)
+{
+    settings->SetMouseLookMomentum(value);
+    emit mouseLookMomentumChanged();
+}
+
 bool QmlSettings::keyboardEnabled() const
 {
     return settings->GetKeyboardEnabled();
@@ -1947,6 +2024,13 @@ void QmlSettings::refreshAllKeys()
     emit psnAuthTokenExpiryChanged();
     emit psnAccountIdChanged();
     emit mouseTouchEnabledChanged();
+    emit mouseLookEnabledChanged();
+    emit mouseLookSensitivityChanged();
+    emit mouseLookDeadzoneChanged();
+    emit mouseLookInvertYChanged();
+    emit mouseLookTrackpadChanged();
+    emit mouseLookTrackpadBoostChanged();
+    emit mouseLookMomentumChanged();
     emit keyboardEnabledChanged();
     emit dpadTouchEnabledChanged();
     emit iDROnFECFailureEnabledChanged();

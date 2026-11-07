@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: LicenseRef-AGPL-3.0-only-OpenSSL
 
 #include <settings.h>
+
+#include <algorithm>
 #include <SDL.h>
 #include <QFile>
 #include <QFileInfo>
@@ -994,6 +996,76 @@ bool Settings::GetMouseTouchEnabled() const
 void Settings::SetMouseTouchEnabled(bool enabled)
 {
 	settings.setValue("settings/mouse_touch_enabled", enabled);
+}
+
+bool Settings::GetMouseLookEnabled() const
+{
+	return settings.value("settings/mouse_look_enabled", false).toBool();
+}
+
+void Settings::SetMouseLookEnabled(bool enabled)
+{
+	settings.setValue("settings/mouse_look_enabled", enabled);
+}
+
+int Settings::GetMouseLookSensitivity() const
+{
+	return std::clamp(settings.value("settings/mouse_look_sensitivity", 80).toInt(), 10, 400);
+}
+
+void Settings::SetMouseLookSensitivity(int sensitivity)
+{
+	settings.setValue("settings/mouse_look_sensitivity", std::clamp(sensitivity, 10, 400));
+}
+
+int Settings::GetMouseLookDeadzone() const
+{
+	return std::clamp(settings.value("settings/mouse_look_deadzone", 12).toInt(), 0, 30);
+}
+
+void Settings::SetMouseLookDeadzone(int percent)
+{
+	settings.setValue("settings/mouse_look_deadzone", std::clamp(percent, 0, 30));
+}
+
+bool Settings::GetMouseLookInvertY() const
+{
+	return settings.value("settings/mouse_look_invert_y", false).toBool();
+}
+
+void Settings::SetMouseLookInvertY(bool invert)
+{
+	settings.setValue("settings/mouse_look_invert_y", invert);
+}
+
+bool Settings::GetMouseLookTrackpad() const
+{
+	return settings.value("settings/mouse_look_trackpad", false).toBool();
+}
+
+void Settings::SetMouseLookTrackpad(bool enabled)
+{
+	settings.setValue("settings/mouse_look_trackpad", enabled);
+}
+
+float Settings::GetMouseLookTrackpadBoost() const
+{
+	return std::clamp(settings.value("settings/mouse_look_trackpad_boost", 3.0f).toFloat(), 1.0f, 8.0f);
+}
+
+void Settings::SetMouseLookTrackpadBoost(float boost)
+{
+	settings.setValue("settings/mouse_look_trackpad_boost", std::clamp(boost, 1.0f, 8.0f));
+}
+
+int Settings::GetMouseLookMomentum() const
+{
+	return std::clamp(settings.value("settings/mouse_look_momentum", 250).toInt(), 0, 800);
+}
+
+void Settings::SetMouseLookMomentum(int ms)
+{
+	settings.setValue("settings/mouse_look_momentum", std::clamp(ms, 0, 800));
 }
 
 

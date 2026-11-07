@@ -81,6 +81,13 @@ class QmlSettings : public QObject
     Q_PROPERTY(QString psnAuthTokenExpiry READ psnAuthTokenExpiry WRITE setPsnAuthTokenExpiry NOTIFY psnAuthTokenExpiryChanged)
     Q_PROPERTY(QString psnAccountId READ psnAccountId WRITE setPsnAccountId NOTIFY psnAccountIdChanged)
     Q_PROPERTY(bool mouseTouchEnabled READ mouseTouchEnabled WRITE setMouseTouchEnabled NOTIFY mouseTouchEnabledChanged)
+    Q_PROPERTY(bool mouseLookEnabled READ mouseLookEnabled WRITE setMouseLookEnabled NOTIFY mouseLookEnabledChanged)
+    Q_PROPERTY(int mouseLookSensitivity READ mouseLookSensitivity WRITE setMouseLookSensitivity NOTIFY mouseLookSensitivityChanged)
+    Q_PROPERTY(int mouseLookDeadzone READ mouseLookDeadzone WRITE setMouseLookDeadzone NOTIFY mouseLookDeadzoneChanged)
+    Q_PROPERTY(bool mouseLookInvertY READ mouseLookInvertY WRITE setMouseLookInvertY NOTIFY mouseLookInvertYChanged)
+    Q_PROPERTY(bool mouseLookTrackpad READ mouseLookTrackpad WRITE setMouseLookTrackpad NOTIFY mouseLookTrackpadChanged)
+    Q_PROPERTY(float mouseLookTrackpadBoost READ mouseLookTrackpadBoost WRITE setMouseLookTrackpadBoost NOTIFY mouseLookTrackpadBoostChanged)
+    Q_PROPERTY(int mouseLookMomentum READ mouseLookMomentum WRITE setMouseLookMomentum NOTIFY mouseLookMomentumChanged)
     Q_PROPERTY(bool keyboardEnabled READ keyboardEnabled WRITE setKeyboardEnabled NOTIFY keyboardEnabledChanged)
     Q_PROPERTY(bool dpadTouchEnabled READ dpadTouchEnabled WRITE setDpadTouchEnabled NOTIFY dpadTouchEnabledChanged)
     Q_PROPERTY(bool iDROnFECFailureEnabled READ iDROnFECFailureEnabled WRITE setIDROnFECFailureEnabled NOTIFY iDROnFECFailureEnabledChanged)
@@ -546,6 +553,20 @@ public:
 
     bool mouseTouchEnabled() const;
     void setMouseTouchEnabled(bool enabled);
+    bool mouseLookEnabled() const;
+    void setMouseLookEnabled(bool value);
+    int mouseLookSensitivity() const;
+    void setMouseLookSensitivity(int value);
+    int mouseLookDeadzone() const;
+    void setMouseLookDeadzone(int value);
+    bool mouseLookInvertY() const;
+    void setMouseLookInvertY(bool value);
+    bool mouseLookTrackpad() const;
+    void setMouseLookTrackpad(bool value);
+    float mouseLookTrackpadBoost() const;
+    void setMouseLookTrackpadBoost(float value);
+    int mouseLookMomentum() const;
+    void setMouseLookMomentum(int value);
 
     bool keyboardEnabled() const;
     void setKeyboardEnabled(bool enabled);
@@ -681,6 +702,13 @@ signals:
     void psnAuthTokenExpiryChanged();
     void psnAccountIdChanged();
     void mouseTouchEnabledChanged();
+    void mouseLookEnabledChanged();
+    void mouseLookSensitivityChanged();
+    void mouseLookDeadzoneChanged();
+    void mouseLookInvertYChanged();
+    void mouseLookTrackpadChanged();
+    void mouseLookTrackpadBoostChanged();
+    void mouseLookMomentumChanged();
     void keyboardEnabledChanged();
     void dpadTouchEnabledChanged();
     void dpadTouchIncrementChanged();
