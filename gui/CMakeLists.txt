@@ -28,6 +28,7 @@ set(SOURCE_FILES
 	src/streamsession.cpp
 	include/mouselook.h
 	src/mouselook.cpp
+	include/mousecapture.h
 	include/sessionlog.h
 	src/sessionlog.cpp
 	include/settings.h
@@ -80,6 +81,7 @@ if(APPLE)
 	list(APPEND SOURCE_FILES
 		include/macMicPermission.h
 		src/macMicPermission.m
+		src/mousecapture_mac.mm
 		include/macWakeSleep.h
 		src/macWakeSleep.cpp
 	)
@@ -88,6 +90,10 @@ elseif(WIN32)
 		include/windowsWakeSleep.h
 		src/windowsWakeSleep.cpp
 	)
+endif()
+
+if(NOT APPLE)
+	list(APPEND SOURCE_FILES src/mousecapture.cpp)
 endif()
 
 add_executable(chiaki WIN32
@@ -141,7 +147,7 @@ if(NOT CHIAKI_ENABLE_FFMPEG_DECODER)
 	message(FATAL_ERROR "Chiaki GUI requires CHIAKI_ENABLE_FFMPEG_DECODER=ON")
 endif()
 if(APPLE)
-	target_link_libraries(chiaki "-framework AVFoundation" "-framework IOKit")
+	target_link_libraries(chiaki "-framework AVFoundation" "-framework IOKit" "-framework AppKit" "-framework ApplicationServices")
 endif()
 
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fanalyzer")
