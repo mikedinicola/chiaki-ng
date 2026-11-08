@@ -2408,6 +2408,207 @@ DialogView {
                                 }
                             }
                         }
+                        Label {
+                            Layout.alignment: Qt.AlignRight
+                            text: qsTr("Mouse Look (Camera)")
+                        }
+
+                        C.CheckBox {
+                            id: mouseLook
+                            text: qsTr("Move the right stick with the mouse or trackpad")
+                            checked: Chiaki.settings.mouseLookEnabled
+                            onToggled: Chiaki.settings.mouseLookEnabled = checked
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignRight
+                            text: qsTr("(Unchecked)")
+                        }
+
+                        Label {
+                            visible: Chiaki.settings.mouseLookEnabled
+                        }
+
+                        Label {
+                            visible: Chiaki.settings.mouseLookEnabled
+                            Layout.preferredWidth: 500
+                            wrapMode: Text.WordWrap
+                            opacity: 0.75
+                            text: qsTr("Click the stream to capture the pointer. F8 (fn+F8 on Mac keyboards) or opening the stream menu releases it. Left, right and middle click are R2, L2 and R3.")
+                        }
+
+                        Label {
+                            visible: Chiaki.settings.mouseLookEnabled
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignRight
+                            text: qsTr("Mouse Look Sensitivity")
+                            visible: Chiaki.settings.mouseLookEnabled
+                        }
+
+                        C.Slider {
+                            id: mouseLookSensitivity
+                            Layout.preferredWidth: 250
+                            visible: Chiaki.settings.mouseLookEnabled
+                            from: 10
+                            to: 400
+                            stepSize: 5
+                            value: Chiaki.settings.mouseLookSensitivity
+                            onMoved: Chiaki.settings.mouseLookSensitivity = value
+
+                            Label {
+                                anchors {
+                                    left: parent.right
+                                    verticalCenter: parent.verticalCenter
+                                    leftMargin: 10
+                                }
+                                text: qsTr("%1").arg(parent.value)
+                            }
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignRight
+                            text: qsTr("(80)")
+                            visible: Chiaki.settings.mouseLookEnabled
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignRight
+                            text: qsTr("Game Dead Zone Compensation")
+                            visible: Chiaki.settings.mouseLookEnabled
+                        }
+
+                        C.Slider {
+                            id: mouseLookDeadzone
+                            Layout.preferredWidth: 250
+                            visible: Chiaki.settings.mouseLookEnabled
+                            from: 0
+                            to: 30
+                            stepSize: 1
+                            value: Chiaki.settings.mouseLookDeadzone
+                            onMoved: Chiaki.settings.mouseLookDeadzone = value
+
+                            Label {
+                                anchors {
+                                    left: parent.right
+                                    verticalCenter: parent.verticalCenter
+                                    leftMargin: 10
+                                }
+                                text: qsTr("%1%").arg(parent.value)
+                            }
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignRight
+                            text: qsTr("(12%)")
+                            visible: Chiaki.settings.mouseLookEnabled
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignRight
+                            text: qsTr("Mouse Look Invert Y")
+                            visible: Chiaki.settings.mouseLookEnabled
+                        }
+
+                        C.CheckBox {
+                            id: mouseLookInvertY
+                            visible: Chiaki.settings.mouseLookEnabled
+                            text: qsTr("Invert vertical camera movement")
+                            checked: Chiaki.settings.mouseLookInvertY
+                            onToggled: Chiaki.settings.mouseLookInvertY = checked
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignRight
+                            text: qsTr("(Unchecked)")
+                            visible: Chiaki.settings.mouseLookEnabled
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignRight
+                            text: qsTr("Trackpad Mode")
+                            visible: Chiaki.settings.mouseLookEnabled
+                        }
+
+                        C.CheckBox {
+                            id: mouseLookTrackpad
+                            visible: Chiaki.settings.mouseLookEnabled
+                            text: qsTr("Boost small movements and glide after lifting your finger")
+                            checked: Chiaki.settings.mouseLookTrackpad
+                            onToggled: Chiaki.settings.mouseLookTrackpad = checked
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignRight
+                            text: qsTr("(Unchecked)")
+                            visible: Chiaki.settings.mouseLookEnabled
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignRight
+                            text: qsTr("Trackpad Boost")
+                            visible: Chiaki.settings.mouseLookEnabled && Chiaki.settings.mouseLookTrackpad
+                        }
+
+                        C.Slider {
+                            id: mouseLookTrackpadBoost
+                            Layout.preferredWidth: 250
+                            visible: Chiaki.settings.mouseLookEnabled && Chiaki.settings.mouseLookTrackpad
+                            from: 1
+                            to: 8
+                            stepSize: 0.5
+                            value: Chiaki.settings.mouseLookTrackpadBoost
+                            onMoved: Chiaki.settings.mouseLookTrackpadBoost = value
+
+                            Label {
+                                anchors {
+                                    left: parent.right
+                                    verticalCenter: parent.verticalCenter
+                                    leftMargin: 10
+                                }
+                                text: qsTr("%1×").arg(parent.value.toFixed(1))
+                            }
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignRight
+                            text: qsTr("(3.0×)")
+                            visible: Chiaki.settings.mouseLookEnabled && Chiaki.settings.mouseLookTrackpad
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignRight
+                            text: qsTr("Trackpad Momentum")
+                            visible: Chiaki.settings.mouseLookEnabled && Chiaki.settings.mouseLookTrackpad
+                        }
+
+                        C.Slider {
+                            id: mouseLookMomentum
+                            Layout.preferredWidth: 250
+                            visible: Chiaki.settings.mouseLookEnabled && Chiaki.settings.mouseLookTrackpad
+                            from: 0
+                            to: 800
+                            stepSize: 25
+                            value: Chiaki.settings.mouseLookMomentum
+                            onMoved: Chiaki.settings.mouseLookMomentum = value
+
+                            Label {
+                                anchors {
+                                    left: parent.right
+                                    verticalCenter: parent.verticalCenter
+                                    leftMargin: 10
+                                }
+                                text: parent.value > 0 ? qsTr("%1 ms").arg(parent.value) : qsTr("Off")
+                            }
+                        }
+
+                        Label {
+                            Layout.alignment: Qt.AlignRight
+                            text: qsTr("(250 ms)")
+                            visible: Chiaki.settings.mouseLookEnabled && Chiaki.settings.mouseLookTrackpad
+                        }
+
                         Repeater {
                             id: chiakiKeys
                             model: Chiaki.settings.controllerMapping
