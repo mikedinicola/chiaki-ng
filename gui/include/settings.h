@@ -443,6 +443,21 @@ class Settings : public QObject
 		bool GetMouseTouchEnabled() const;
 		void SetMouseTouchEnabled(bool enabled);
 
+		bool GetMouseLookEnabled() const;
+		void SetMouseLookEnabled(bool enabled);
+		int GetMouseLookSensitivity() const;
+		void SetMouseLookSensitivity(int sensitivity);
+		int GetMouseLookDeadzone() const;
+		void SetMouseLookDeadzone(int percent);
+		bool GetMouseLookInvertY() const;
+		void SetMouseLookInvertY(bool invert);
+		bool GetMouseLookTrackpad() const;
+		void SetMouseLookTrackpad(bool enabled);
+		float GetMouseLookTrackpadBoost() const;
+		void SetMouseLookTrackpadBoost(float boost);
+		int GetMouseLookMomentum() const;
+		void SetMouseLookMomentum(int ms);
+
 		bool GetDpadTouchEnabled() const;
 		void SetDpadTouchEnabled(bool enabled);
 
