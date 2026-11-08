@@ -53,6 +53,8 @@ class BufferedPlaybackPacerThread;
 class DeferredPresentPacerThread;
 class DeferredSwapThread;
 
+class MouseCapture;
+
 class QmlMainWindow : public QWindow
 {
     Q_OBJECT
@@ -265,6 +267,9 @@ private:
     void refreshPendingFrameAge();
     void snapshotPendingFrame();
     bool handleShortcut(QKeyEvent *event);
+    bool startMouseLook();
+    void stopMouseLook();
+    void restoreStreamCursor();
     bool event(QEvent *event) override;
     QObject *focusObject() const override;
     void updateQueueDepthAverage(int depth);
@@ -326,6 +331,8 @@ private:
 
     QmlBackend *backend = {};
     StreamSession *session = {};
+    MouseCapture *mouse_capture = {};
+    bool mouse_look_captured = false;
     AVBufferRef *vulkan_hw_dev_ctx = nullptr;
     std::atomic<double> queue_depth_average{0.0};
     QAtomicInteger<int> queue_depth_cached = 0;
