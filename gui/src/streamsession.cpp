@@ -3,6 +3,7 @@
 #include <streamsession.h>
 #include <settings.h>
 #include <controllermanager.h>
+#include <cmath>
 
 #include <chiaki/base64.h>
 #include <chiaki/streamconnection.h>
@@ -514,6 +515,11 @@ StreamSession::StreamSession(const StreamSessionConnectInfo &connect_info, QObje
 
 	chiaki_controller_state_set_idle(&keyboard_state);
 	chiaki_controller_state_set_idle(&touch_state);
+	chiaki_controller_state_set_idle(&mouse_look_state);
+	mouse_look_timer = new QTimer(this);
+	mouse_look_timer->setTimerType(Qt::PreciseTimer);
+	mouse_look_timer->setInterval(4);
+	connect(mouse_look_timer, &QTimer::timeout, this, &StreamSession::MouseLookTick);
 	touch_tracker=QMap<int, uint8_t>();
 	mouse_touch_id=-1;
 	dpad_touch_id =-1;
@@ -945,6 +951,78 @@ void StreamSession::HandleMouseMoveEvent(QMouseEvent *event, qreal width, qreal 
 	SendFeedbackState();
 }
 
+void StreamSession::StartMouseLook(const MouseLookConfig &config)
+{
+	mouse_look_config = config;
+	mouse_look.Reset();
+	chiaki_controller_state_set_idle(&mouse_look_state);
+	if(mouse_touch_id >= 0)
+	{
+		chiaki_controller_state_stop_touch(&keyboard_state, (uint8_t)mouse_touch_id);
+		mouse_touch_id = -1;
+	}
+	mouse_look_clock.start();
+	mouse_look_active = true;
+	mouse_look_timer->start();
+	CHIAKI_LOGI(GetChiakiLog(), "Mouse look started (sensitivity %.0f, gain %.1f, momentum %.0f ms)",
+		config.sensitivity, config.gain, config.momentum_ms);
+}
+
+void StreamSession::StopMouseLook()
+{
+	if(!mouse_look_active)
+		return;
+	mouse_look_active = false;
+	mouse_look_timer->stop();
+	mouse_look.Reset();
+	chiaki_controller_state_set_idle(&mouse_look_state);
+	SendFeedbackState();
+	CHIAKI_LOGI(GetChiakiLog(), "Mouse look stopped");
+}
+
+void StreamSession::HandleMouseLookDelta(double dx, double dy)
+{
+	if(mouse_look_active)
+		mouse_look.Push(dx, dy, (double)mouse_look_clock.nsecsElapsed() / 1e6);
+}
+
+void StreamSession::HandleMouseLookButton(Qt::MouseButton button, bool pressed)
+{
+	if(!mouse_look_active)
+		return;
+	// Shooter-style defaults: left = R2 (fire), right = L2 (aim), middle = R3.
+	switch(button)
+	{
+		case Qt::LeftButton:
+			mouse_look_state.r2_state = pressed ? 0xff : 0;
+			break;
+		case Qt::RightButton:
+			mouse_look_state.l2_state = pressed ? 0xff : 0;
+			break;
+		case Qt::MiddleButton:
+			if(pressed)
+				mouse_look_state.buttons |= CHIAKI_CONTROLLER_BUTTON_R3;
+			else
+				mouse_look_state.buttons &= ~CHIAKI_CONTROLLER_BUTTON_R3;
+			break;
+		default:
+			return;
+	}
+	SendFeedbackState();
+}
+
+void StreamSession::MouseLookTick()
+{
+	const MouseLookStick stick = mouse_look.Read((double)mouse_look_clock.nsecsElapsed() / 1e6, mouse_look_config);
+	const int16_t x = (int16_t)std::lround(std::clamp(stick.x, -1.0, 1.0) * 0x7fff);
+	const int16_t y = (int16_t)std::lround(std::clamp(stick.y, -1.0, 1.0) * 0x7fff);
+	if(x == mouse_look_state.right_x && y == mouse_look_state.right_y)
+		return;
+	mouse_look_state.right_x = x;
+	mouse_look_state.right_y = y;
+	SendFeedbackState();
+}
+
 void StreamSession::HandleKeyboardEvent(QKeyEvent *event)
 {
 	if(!keyboard_controller_enabled)
@@ -1284,6 +1362,7 @@ void StreamSession::DpadSendFeedbackState()
 	chiaki_controller_state_or(&state, &state, &sdeck_state);
 #endif
 	chiaki_controller_state_or(&state, &state, &keyboard_state);
+	chiaki_controller_state_or(&state, &state, &mouse_look_state);
 	chiaki_controller_state_or(&state, &state, &touch_state);
 
 	if(input_block)
@@ -1340,6 +1419,7 @@ void StreamSession::SendFeedbackState()
 	chiaki_controller_state_or(&state, &state, &sdeck_state);
 #endif
 	chiaki_controller_state_or(&state, &state, &keyboard_state);
+	chiaki_controller_state_or(&state, &state, &mouse_look_state);
 	chiaki_controller_state_or(&state, &state, &touch_state);
 
 	if(input_block)
